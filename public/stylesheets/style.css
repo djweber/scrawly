@@ -1,8 +1,31 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+* {
+  box-sizing: border-box;
 }
-
-a {
-  color: #00B7FF;
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+body {
+  padding: 0;
+  margin: 0;
+  white-space: nowrap;
+  background: #202020;
+}
+div.container {
+  height: 1024px;
+  width: 1024px;
+  margin: 0 auto;
+  background: #202020;
+}
+div.tray {
+  position: relative;
+  height: 64px;
+  width: 100%;
+  background: #202020;
+}
+canvas.wboard {
+  width: 1024px;
+  height: 1024px;
+  display: inline-block;
+  background: #fff url("../images/cardboard-flat.png") repeat;
 }
