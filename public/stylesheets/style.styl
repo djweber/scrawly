@@ -1,3 +1,11 @@
+boardColor = #eee
+bodyColor = #151515
+red = #ac4142
+orange = #d28445
+yellow = #f4bf75
+green = #90a959
+blue = #6a9fb5
+
 *
     box-sizing border-box
     &:before, &:after
@@ -6,19 +14,38 @@ body
     padding 0
     margin 0
     white-space nowrap
-    background #202020
+    background #eee url('../images/clouds.png') no-repeat center center fixed
+    background-size cover
+div.well
+    display inline-block
+    width 32px
+    height 32px
+    border-radius 16px
+    &.red
+        background red
+    &.orange
+        background orange
+    &.yellow
+        background yellow
+    &.green
+        background green
+    &.blue
+        background blue
 div.container
     height 1024px
     width 1024px
     margin 0 auto
-    background #202020
 div.tray
-    position relative
-    height 64px
-    width 100%
-    background #202020
+    position absolute
+    justify-content space-between
+    display flex
+    left 0
+    right 0
+    width 320px
+    margin 0 auto
+    padding 10px
 canvas.wboard
     width 1024px
     height 1024px
     display inline-block
-    background #fff url('../images/cardboard-flat.png') repeat
+    background boardColor url('../images/p6.png') repeat
