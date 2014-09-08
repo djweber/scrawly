@@ -6194,13 +6194,13 @@ function toArray(list, index) {
 },{}],"/Users/david/Desktop/scrawly/src/modules/tray.js":[function(require,module,exports){
 function setColors(colors) {
     /* Populate tray with colors (switch to color picker later) */
-    console.log(colors);
     var width = parseInt(window.getComputedStyle(this.container, null).getPropertyValue('width'));
     var padding = parseInt(window.getComputedStyle(this.container, null).getPropertyValue('padding'));
     var margin = ((width - padding) / colors.length) / 4;
+    
     colors.forEach(function(v,i,a) {
         var well = document.createElement('div');
-        well.className = 'well';
+        well.classList.add('well');
         well.style.backgroundColor = v;
         well.style.marginLeft = margin + 'px';
         well.style.marginRight = margin +'px';
@@ -6208,9 +6208,15 @@ function setColors(colors) {
     }.bind(this));
 
     /* Bind single event listener to canvas (event delegation) */
-    document.addEventListener('click', function(e) {
+    document.onclick = (function(e) {
         if(e.target.className == 'well') {
             console.log(e.target.style.backgroundColor);
+            /* Unselect currently clicked color if available */
+            var clicked = document.querySelector('.clicked');
+            if(clicked) {
+                clicked.classList.remove('clicked');
+            }
+            e.target.classList.add('clicked');
             this.selColor = e.target.style.backgroundColor;
         }
     }.bind(this));
@@ -6228,7 +6234,7 @@ module.exports = function(el) {
         selColor: '#ac4142',
         setColors: setColors, 
         clear: function() {
-        
+         
         }
     };
 };
@@ -6267,27 +6273,33 @@ function drawRecv(data) {
     this.draw(data.x2, data.y2, data.x1, data.y1, ctx, data.clr);
 }
 
-function initDrawing() {
+function initCanvas() {
 
     var dragging = false;
     var tray = this.tray;
     var canvas = this.canvas;
     var ctx = canvas.getContext('2d');
-    var prevX;
-    var prevY;
+    var prevX = 0;
+    var prevY = 0;
 
     /* It's closure time! */
-    canvas.addEventListener('mousedown', function(e) {
+    canvas.onmousedown = (function(e) {
         dragging = true;
         var clickX = e.pageX - canvas.offsetLeft;
         var clickY = e.pageY - canvas.offsetTop;
+        
+        /* Draw to canvas */
         this.draw(clickX, clickY, clickX, clickY, ctx, tray.selColor);
+        
+        /* Send draw data to socket */
         this.drawEmit(clickX, clickY, clickX, clickY, tray.selColor);
+        
+        /* Record our last position */
         prevX = clickX;
         prevY = clickY;
     }.bind(this));
 
-    canvas.addEventListener('mousemove', function(e) {
+    canvas.onmousemove = (function(e) {
         if(dragging) {
             var clickX = e.pageX - canvas.offsetLeft;
             var clickY = e.pageY - canvas.offsetTop;
@@ -6295,20 +6307,20 @@ function initDrawing() {
             this.drawEmit(clickX, clickY, prevX, prevY, tray.selColor);
             prevX = clickX;
             prevY = clickY;
-                    }
+        }
     }.bind(this));
 
-    canvas.addEventListener('mouseup', function(e) {
+    canvas.onmouseup = function(e) {
         dragging = false;
-    });
+    };
 }
 
-function setupSocket(wb, conn) {
+function initSocket(conn) {
     conn.on('connect', function() {
         console.log('Connected to server');
         conn.on('drawData', function(data) {
             /* Add data to canvas */
-            wb.drawRecv(data); 
+            this.drawRecv(data); 
         });
     });
 }
@@ -6329,15 +6341,14 @@ module.exports = function(boardEle, trayEle, url) {
         tray: tray,
         canvas: canvas,
         conn: socket,
-        initDrawing: initDrawing,
         draw: draw,
         drawEmit: drawEmit,
         drawRecv: drawRecv,
     };
-    
-    whiteboard.initDrawing();
-    
-    setupSocket(whiteboard, socket);
+
+    /* Initialize our whiteboard and socket connecton */ 
+    initCanvas.bind(whiteboard)();
+    initSocket.bind(whiteboard)(socket);
  
     return whiteboard;
 };

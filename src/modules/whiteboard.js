@@ -31,27 +31,33 @@ function drawRecv(data) {
     this.draw(data.x2, data.y2, data.x1, data.y1, ctx, data.clr);
 }
 
-function initDrawing() {
+function initCanvas() {
 
     var dragging = false;
     var tray = this.tray;
     var canvas = this.canvas;
     var ctx = canvas.getContext('2d');
-    var prevX;
-    var prevY;
+    var prevX = 0;
+    var prevY = 0;
 
     /* It's closure time! */
-    canvas.addEventListener('mousedown', function(e) {
+    canvas.onmousedown = (function(e) {
         dragging = true;
         var clickX = e.pageX - canvas.offsetLeft;
         var clickY = e.pageY - canvas.offsetTop;
+        
+        /* Draw to canvas */
         this.draw(clickX, clickY, clickX, clickY, ctx, tray.selColor);
+        
+        /* Send draw data to socket */
         this.drawEmit(clickX, clickY, clickX, clickY, tray.selColor);
+        
+        /* Record our last position */
         prevX = clickX;
         prevY = clickY;
     }.bind(this));
 
-    canvas.addEventListener('mousemove', function(e) {
+    canvas.onmousemove = (function(e) {
         if(dragging) {
             var clickX = e.pageX - canvas.offsetLeft;
             var clickY = e.pageY - canvas.offsetTop;
@@ -59,20 +65,20 @@ function initDrawing() {
             this.drawEmit(clickX, clickY, prevX, prevY, tray.selColor);
             prevX = clickX;
             prevY = clickY;
-                    }
+        }
     }.bind(this));
 
-    canvas.addEventListener('mouseup', function(e) {
+    canvas.onmouseup = function(e) {
         dragging = false;
-    });
+    };
 }
 
-function setupSocket(wb, conn) {
+function initSocket(conn) {
     conn.on('connect', function() {
         console.log('Connected to server');
         conn.on('drawData', function(data) {
             /* Add data to canvas */
-            wb.drawRecv(data); 
+            this.drawRecv(data); 
         });
     });
 }
@@ -93,15 +99,14 @@ module.exports = function(boardEle, trayEle, url) {
         tray: tray,
         canvas: canvas,
         conn: socket,
-        initDrawing: initDrawing,
         draw: draw,
         drawEmit: drawEmit,
         drawRecv: drawRecv,
     };
-    
-    whiteboard.initDrawing();
-    
-    setupSocket(whiteboard, socket);
+
+    /* Initialize our whiteboard and socket connecton */ 
+    initCanvas.bind(whiteboard)();
+    initSocket.bind(whiteboard)(socket);
  
     return whiteboard;
 };

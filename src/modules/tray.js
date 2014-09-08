@@ -1,12 +1,12 @@
 function setColors(colors) {
     /* Populate tray with colors (switch to color picker later) */
-    console.log(colors);
     var width = parseInt(window.getComputedStyle(this.container, null).getPropertyValue('width'));
     var padding = parseInt(window.getComputedStyle(this.container, null).getPropertyValue('padding'));
     var margin = ((width - padding) / colors.length) / 4;
+    
     colors.forEach(function(v,i,a) {
         var well = document.createElement('div');
-        well.className = 'well';
+        well.classList.add('well');
         well.style.backgroundColor = v;
         well.style.marginLeft = margin + 'px';
         well.style.marginRight = margin +'px';
@@ -14,9 +14,15 @@ function setColors(colors) {
     }.bind(this));
 
     /* Bind single event listener to canvas (event delegation) */
-    document.addEventListener('click', function(e) {
+    document.onclick = (function(e) {
         if(e.target.className == 'well') {
             console.log(e.target.style.backgroundColor);
+            /* Unselect currently clicked color if available */
+            var clicked = document.querySelector('.clicked');
+            if(clicked) {
+                clicked.classList.remove('clicked');
+            }
+            e.target.classList.add('clicked');
             this.selColor = e.target.style.backgroundColor;
         }
     }.bind(this));
@@ -34,7 +40,7 @@ module.exports = function(el) {
         selColor: '#ac4142',
         setColors: setColors, 
         clear: function() {
-        
+         
         }
     };
 };
