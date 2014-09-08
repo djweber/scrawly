@@ -18,21 +18,6 @@ div.well {
   height: 32px;
   border-radius: 16px;
 }
-div.well.red {
-  background: #ac4142;
-}
-div.well.orange {
-  background: #d28445;
-}
-div.well.yellow {
-  background: #f4bf75;
-}
-div.well.green {
-  background: #90a959;
-}
-div.well.blue {
-  background: #6a9fb5;
-}
 div.container {
   height: 1024px;
   width: 1024px;
