@@ -6238,14 +6238,14 @@ var Tray = require('./tray');
 var io = require('socket.io-client');
 
 function draw(x2, y2, x1, y1, ctx, color) {
-    ctx.beginPath();
+    ctx.strokeStyle = color;
     ctx.lineJoin = 'round';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = color;
-    ctx.stroke();
     ctx.closePath();
+    ctx.stroke();
 }
 
 function drawEmit(x2, y2, x1, y1, color) {
@@ -6257,14 +6257,14 @@ function drawEmit(x2, y2, x1, y1, color) {
         y2: y2,
         clr: color
     };
-    console.log(data);
     console.log('Emitting');
     this.conn.emit('draw', data);
 }
 
 function drawRecv(data) {
-    console.log('Data received');
-    this.draw(data.x2, data.y2, data.x1, data.y1, this.canvas.getContext('2d'), this.clr);
+    console.log('Data received', data);
+    var ctx = this.canvas.getContext('2d');
+    this.draw(data.x2, data.y2, data.x1, data.y1, ctx, data.clr);
 }
 
 function initDrawing() {
@@ -6272,7 +6272,7 @@ function initDrawing() {
     var dragging = false;
     var tray = this.tray;
     var canvas = this.canvas;
-    var ctx =  canvas.getContext('2d');
+    var ctx = canvas.getContext('2d');
     var prevX;
     var prevY;
 
@@ -6282,9 +6282,9 @@ function initDrawing() {
         var clickX = e.pageX - canvas.offsetLeft;
         var clickY = e.pageY - canvas.offsetTop;
         this.draw(clickX, clickY, clickX, clickY, ctx, tray.selColor);
+        this.drawEmit(clickX, clickY, clickX, clickY, tray.selColor);
         prevX = clickX;
         prevY = clickY;
-        this.drawEmit(clickX, clickY, clickX, clickY, tray.selColor);
     }.bind(this));
 
     canvas.addEventListener('mousemove', function(e) {
@@ -6292,10 +6292,10 @@ function initDrawing() {
             var clickX = e.pageX - canvas.offsetLeft;
             var clickY = e.pageY - canvas.offsetTop;
             this.draw(clickX, clickY, prevX, prevY, ctx, tray.selColor);
+            this.drawEmit(clickX, clickY, prevX, prevY, tray.selColor);
             prevX = clickX;
             prevY = clickY;
-            this.drawEmit(clickX, clickY, prevX, prevY, tray.selColor);
-        }
+                    }
     }.bind(this));
 
     canvas.addEventListener('mouseup', function(e) {

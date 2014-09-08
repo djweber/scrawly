@@ -15,7 +15,7 @@ var io = socket(server);
 io.on('connection', function(socket) {
     socket.on('draw', function(data) {
         console.log('Drawing data received', data);
-        socket.broadcast.emit('drawData', data);
+        io.sockets.emit('drawData', data);
     });
 });
 
