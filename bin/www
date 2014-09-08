@@ -13,9 +13,10 @@ var server = app.listen(app.get('port'), function() {
 var io = socket(server);
 
 io.on('connection', function(socket) {
+    console.log('User connected');
     socket.on('draw', function(data) {
         console.log('Drawing data received', data);
-        io.sockets.emit('drawData', data);
+        socket.broadcast.emit('drawData', data);
     });
 });
 
