@@ -5,14 +5,17 @@ var socket = require('socket.io');
 app.set('port', process.env.PORT || 3000);
 
 var server = app.listen(app.get('port'), function() {
-  debug('Express server listening on port ' + server.address().port);
+    debug('Express server listening on port ' + server.address().port);
 });
 
 
 /* Give socket.io the server instance */
 var io = socket(server);
 
-io.on('connection', function() {
-    console.log('Connected');
+io.on('connection', function(socket) {
+    socket.on('draw', function(data) {
+        console.log('Drawing data received', data);
+        socket.broadcast.emit('drawData', data);
+    });
 });
 

@@ -6198,7 +6198,6 @@ function setColors(colors) {
     var width = parseInt(window.getComputedStyle(this.container, null).getPropertyValue('width'));
     var padding = parseInt(window.getComputedStyle(this.container, null).getPropertyValue('padding'));
     var margin = ((width - padding) / colors.length) / 4;
-    console.log(margin);
     colors.forEach(function(v,i,a) {
         var well = document.createElement('div');
         well.className = 'well';
@@ -6217,6 +6216,10 @@ function setColors(colors) {
     }.bind(this));
 }
 
+function clear() {
+
+} 
+
 module.exports = function(el) {
     var element = document.getElementById(el);
     return {
@@ -6232,25 +6235,111 @@ module.exports = function(el) {
 
 },{}],"/Users/david/Desktop/scrawly/src/modules/whiteboard.js":[function(require,module,exports){
 var Tray = require('./tray');
-var Socket = require('socket.io-client');
+var io = require('socket.io-client');
+
+function draw(x2, y2, x1, y1, ctx, color) {
+    ctx.beginPath();
+    ctx.lineJoin = 'round';
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+    ctx.closePath();
+}
+
+function drawEmit(x2, y2, x1, y1, color) {
+    /* Send draw event to server */
+    var data = {
+        x1: x1,
+        y1: y1,
+        x2: x2,
+        y2: y2,
+        clr: color
+    };
+    console.log(data);
+    console.log('Emitting');
+    this.conn.emit('draw', data);
+}
+
+function drawRecv(data) {
+    console.log('Data received');
+    this.draw(data.x2, data.y2, data.x1, data.y1, this.canvas.getContext('2d'), this.clr);
+}
+
+function initDrawing() {
+
+    var dragging = false;
+    var tray = this.tray;
+    var canvas = this.canvas;
+    var ctx =  canvas.getContext('2d');
+    var prevX;
+    var prevY;
+
+    /* It's closure time! */
+    canvas.addEventListener('mousedown', function(e) {
+        dragging = true;
+        var clickX = e.pageX - canvas.offsetLeft;
+        var clickY = e.pageY - canvas.offsetTop;
+        this.draw(clickX, clickY, clickX, clickY, ctx, tray.selColor);
+        prevX = clickX;
+        prevY = clickY;
+        this.drawEmit(clickX, clickY, clickX, clickY, tray.selColor);
+    }.bind(this));
+
+    canvas.addEventListener('mousemove', function(e) {
+        if(dragging) {
+            var clickX = e.pageX - canvas.offsetLeft;
+            var clickY = e.pageY - canvas.offsetTop;
+            this.draw(clickX, clickY, prevX, prevY, ctx, tray.selColor);
+            prevX = clickX;
+            prevY = clickY;
+            this.drawEmit(clickX, clickY, prevX, prevY, tray.selColor);
+        }
+    }.bind(this));
+
+    canvas.addEventListener('mouseup', function(e) {
+        dragging = false;
+    });
+}
+
+function setupSocket(wb, conn) {
+    conn.on('connect', function() {
+        console.log('Connected to server');
+        conn.on('drawData', function(data) {
+            /* Add data to canvas */
+            wb.drawRecv(data); 
+        });
+    });
+}
 
 module.exports = function(boardEle, trayEle, url) {
-
+    var whiteboard = {};
+    
     /* Get canvas element */
     var canvas = document.getElementById(boardEle);
     
     /* Set up tray */
     var tray = Tray(trayEle);
+    
     /* Set up socket connection */
-    var conn = '';
-    /* Set up canvas click event handlers */
-
-    /* Return our whiteboard object */
-    return {
+    var socket = io('http://localhost:3000');
+   
+    whiteboard = {
         tray: tray,
         canvas: canvas,
-        connection: conn
+        conn: socket,
+        initDrawing: initDrawing,
+        draw: draw,
+        drawEmit: drawEmit,
+        drawRecv: drawRecv,
     };
+    
+    whiteboard.initDrawing();
+    
+    setupSocket(whiteboard, socket);
+ 
+    return whiteboard;
 };
 
 },{"./tray":"/Users/david/Desktop/scrawly/src/modules/tray.js","socket.io-client":"/Users/david/Desktop/scrawly/node_modules/socket.io-client/index.js"}],"/Users/david/Desktop/scrawly/src/scrawly.js":[function(require,module,exports){
@@ -6259,21 +6348,16 @@ var io = require('socket.io-client');
 document.addEventListener('DOMContentLoaded', function(e) {
     var Whiteboard = require('./modules/whiteboard');
     var board = Whiteboard('wboard', 'tray', 'localhost:3000');
-    var socket;
 
     /* Base16 color scheme */
     board.tray.setColors([
+        '#404040',
         '#ac4142',
         '#d28445',
         '#f4bf75',
         '#90a959',
         '#6a9fb5'
     ]);
-
-    socket = io('http://localhost:3000');
-    socket.on('connect', function() {
-        console.log('Connected to server');
-    });
 });
 
 

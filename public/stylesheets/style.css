@@ -21,18 +21,20 @@ div.well {
 div.container {
   height: 1024px;
   width: 1024px;
-  margin: 0 auto;
+  margin: 20px auto;
 }
 div.tray {
   position: absolute;
   text-align: center;
   left: 0;
   right: 0;
+  top: 30px;
   width: 320px;
   margin: 0 auto;
   padding: 10px;
 }
 canvas.wboard {
+  cursor: crosshair;
   width: 1024px;
   height: 1024px;
   border: 3px dashed #707070;

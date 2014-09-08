@@ -4,7 +4,6 @@ function setColors(colors) {
     var width = parseInt(window.getComputedStyle(this.container, null).getPropertyValue('width'));
     var padding = parseInt(window.getComputedStyle(this.container, null).getPropertyValue('padding'));
     var margin = ((width - padding) / colors.length) / 4;
-    console.log(margin);
     colors.forEach(function(v,i,a) {
         var well = document.createElement('div');
         well.className = 'well';
@@ -22,6 +21,10 @@ function setColors(colors) {
         }
     }.bind(this));
 }
+
+function clear() {
+
+} 
 
 module.exports = function(el) {
     var element = document.getElementById(el);
