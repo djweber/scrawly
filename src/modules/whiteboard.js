@@ -1,15 +1,21 @@
-var tray = require('./modules/tray');
+var Tray = require('./tray');
 var socket = require('socket.io');
 
-module.exports = function(el, url) {
+module.exports = function(boardEle, trayEle, url) {
 
     /* Get canvas element */
     var canvas = document.getElementById(el);
     
+    /* Set up tray */
+    var tray = Tray(trayEle);
     /* Set up socket connection */
 
-    /* Return our whiteboard instance */
+    /* Set up canvas click event handlers */
+
+    /* Return our whiteboard object */
     return {
-        canvas: canvas
+        tray: tray,
+        canvas: canvas,
+        connection: conn
     };
 };
