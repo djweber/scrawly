@@ -6321,8 +6321,8 @@ function initSocket(conn) {
         conn.on('drawData', function(data) {
             /* Add data to canvas */
             this.drawRecv(data); 
-        });
-    });
+        }.bind(this));
+    }.bind(this));
 }
 
 module.exports = function(boardEle, trayEle, url) {
