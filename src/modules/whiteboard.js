@@ -73,13 +73,13 @@ function initCanvas() {
     };
 }
 
-function initSocket(conn) {
+function initSocket(conn, wb) {
     conn.on('connect', function() {
         console.log('Connected to server');
         conn.on('drawData', function(data) {
             /* Add data to canvas */
             this.drawRecv(data); 
-        });
+        }.bind(this));
     });
 }
 
